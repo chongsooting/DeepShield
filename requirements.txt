@@ -1,0 +1,6 @@
+tensorflow==2.15.0
+streamlit
+numpy
+opencv-python-headless
+Pillow
+pandas
