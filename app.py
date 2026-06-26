@@ -252,8 +252,7 @@ def render_verdict(is_fake, fake_prob, real_prob, inference_ms, heatmap=None):
 
 
 # ── Load model ─────────────────────────────────────────────────────────────────
-@st.cache_resource
-GDRIVE_FILE_ID = "PASTE_FILE_ID_HERE"
+GDRIVE_FILE_ID = "1IlYSYufMdWM2bhBIVhYHxivhRd8eVW2X"
 MODEL_PATH     = "deepfake_detector.keras"
 
 @st.cache_resource
@@ -264,7 +263,7 @@ def load_model():
             import gdown
             with st.spinner("Downloading model… (first run only, ~30MB)"):
                 gdown.download(
-                    f"https://drive.google.com/uc?id={1IlYSYufMdWM2bhBIVhYHxivhRd8eVW2X}",
+                    f"https://drive.google.com/uc?id={GDRIVE_FILE_ID}",
                     MODEL_PATH,
                     quiet=False
                 )
