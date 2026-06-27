@@ -27,6 +27,40 @@ st.markdown(f"""
 /* ── Hide footer ── */
 footer {{visibility: hidden;}}
 
+/* 🌟 PREMIUM EFFECT 1: Fade & Slide Cascade Reveal */
+@keyframes fadeSlideUp {{
+    from {{ opacity: 0; transform: translateY(15px); }}
+    to {{ opacity: 1; transform: translateY(0); }}
+}}
+/* Apply cascade reveal to metrics, expanders, and images */
+[data-testid="stMetric"], [data-testid="stExpander"], div[data-testid="stImage"] {{
+    animation: fadeSlideUp 0.6s ease-out forwards;
+}}
+
+/* 🌟 PREMIUM EFFECT 2: Liquid Gradient Animation */
+@keyframes gradientBG {{
+    0% {{ background-position: 0% 50%; }}
+    50% {{ background-position: 100% 50%; }}
+    100% {{ background-position: 0% 50%; }}
+}}
+
+/* 🌟 PREMIUM EFFECT 3: Floating Shield Pulse */
+@keyframes floatPulse {{
+    0% {{ transform: translateY(0px) scale(1); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }}
+    50% {{ transform: translateY(-4px) scale(1.03); box-shadow: 0 12px 20px rgba(37,99,235,0.25); }}
+    100% {{ transform: translateY(0px) scale(1); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }}
+}}
+
+/* 🌟 PREMIUM EFFECT 4: Responsive Metrics Override */
+[data-testid="stMetricLabel"] > div {{
+    white-space: normal !important; 
+    font-size: 0.85rem !important;
+    line-height: 1.2 !important;
+}}
+[data-testid="stMetricValue"] > div {{
+    font-size: 1.4rem !important; 
+}}
+
 /* ── Tab BAR only ── */
 .stTabs [data-baseweb="tab-list"] {{
     background: var(--secondary-background-color);
@@ -87,7 +121,7 @@ footer {{visibility: hidden;}}
     box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
 }}
 .stButton > button:hover {{
-    background: #1d4ed8 !important; /* Slightly darker blue */
+    background: #1d4ed8 !important; 
     color: white !important;
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(37, 99, 235, 0.35);
@@ -139,10 +173,13 @@ footer {{visibility: hidden;}}
 
 
 # ── Hero header (UPGRADED UI) ──────────────────────────────────────────────────
+# ── Hero header (ANIMATED UI) ──────────────────────────────────────────────────
 def render_header():
     st.markdown(f"""
     <div style="
-        background: linear-gradient(135deg, rgba(37,99,235,0.08) 0%, rgba(124,58,237,0.08) 100%);
+        background: linear-gradient(-45deg, rgba(37,99,235,0.05), rgba(124,58,237,0.1), rgba(37,99,235,0.05), rgba(34,197,94,0.05));
+        background-size: 300% 300%;
+        animation: gradientBG 8s ease infinite;
         border: 1px solid rgba(37,99,235,0.2);
         border-radius: 16px;
         padding: 28px 36px;
@@ -155,10 +192,10 @@ def render_header():
                 background: white;
                 padding: 10px;
                 border-radius: 14px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                animation: floatPulse 3s ease-in-out infinite;
             ">🛡️</div>
             <div>
                 <div style="
@@ -219,31 +256,40 @@ def render_verdict(is_fake, fake_prob, real_prob, inference_ms, heatmap=None):
         conf_label = "Real"
         conf_value = real_prob
 
+    # Main Verdict Box - Upgraded with Flexbox Centering
     st.markdown(f"""
     <div style="
         background:{bg};
         border:2px solid {color};
         border-radius:14px;
-        padding:20px 24px;
+        padding: 24px 16px; /* Extra breathing room */
         margin-bottom:16px;
-        text-align:center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
         box-shadow: 0 4px 12px {bg};
     ">
-        <div style="font-size:2.2rem; margin-bottom:6px;">{icon}</div>
+        <div style="font-size:2.4rem; margin-bottom:8px;">{icon}</div>
         <div style="
-            font-size:1.3rem;
-            font-weight:800;
+            font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+            font-weight:900;
             color:{color};
-            letter-spacing:0.05em;
+            letter-spacing:0.02em;
+            line-height: 1.2;
+            word-wrap: break-word;
         ">{verdict}</div>
         <div style="
-            font-size:0.8rem;
+            font-size:0.85rem;
+            font-weight: 600;
             color:var(--text-color);
-            margin-top:4px;
+            margin-top:8px;
+            opacity: 0.9;
         ">Confidence: {conf_value*100:.1f}%</div>
     </div>
 
-    <div style="color:var(--text-color); font-size:0.8rem; margin:8px 0 4px 0; font-weight: 500;">
+    <div style="color:var(--text-color); font-size:0.85rem; margin:8px 0 6px 0; font-weight: 600;">
         {conf_label} confidence
     </div>
     <div style="
@@ -261,7 +307,7 @@ def render_verdict(is_fake, fake_prob, real_prob, inference_ms, heatmap=None):
             transition: width 0.5s ease-out;
         "></div>
     </div>
-    <div style="text-align:right; color:var(--text-color); font-size:0.75rem; margin-top:4px; font-weight:600;">
+    <div style="text-align:right; color:var(--text-color); font-size:0.8rem; margin-top:6px; font-weight:700;">
         {conf_value*100:.1f}%
     </div>
     """, unsafe_allow_html=True)
@@ -271,19 +317,29 @@ def render_verdict(is_fake, fake_prob, real_prob, inference_ms, heatmap=None):
     col2.metric("Real probability", f"{real_prob*100:.1f}%")
     st.metric("Inference time", f"{inference_ms:.1f} ms")
 
+    # Heatmap Box - Fixed Corner Squishing with Flexbox Centering
     if heatmap is not None:
         high_activation = np.sum(heatmap > 0.7) / heatmap.size * 100
         st.markdown(f"""
         <div style="
-            background:rgba(124,58,237,0.10);
+            background:rgba(124,58,237,0.08);
             border:1px solid rgba(124,58,237,0.3);
-            border-radius:8px;
-            padding:10px 14px;
-            margin-top:12px;
-            font-size:0.82rem;
-            color:#7c3aed;
+            border-radius:12px;
+            padding: 18px 16px; 
+            margin-top:16px;
+            margin-bottom:16px; /* 👈 THIS IS THE FIX: Adds space below the box */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         ">
-            🔥 High-activation region: <b>{high_activation:.1f}%</b> of image area
+            <div style="font-size: 0.85rem; color:#7c3aed; font-weight: 600; margin-bottom: 6px;">
+                🔥 High-activation region:
+            </div>
+            <div style="font-size: 1.15rem; color:#7c3aed; font-weight: 800;">
+                {high_activation:.1f}% <span style="font-size: 0.85rem; font-weight: 600; opacity: 0.8;">of image area</span>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
