@@ -19,10 +19,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ── Accent color — hardcoded so theme switching still works freely ─────────────
-# We do NOT use var(--primary-color) here because that requires config.toml
-# which locks the theme switcher. Instead we hardcode our blue and let
-# Streamlit handle all text/background colours via its own theme engine.
+# ── Accent color ───────────────────────────────────────────────────────────────
 BLUE = "#2563eb"
 
 st.markdown(f"""
@@ -30,7 +27,7 @@ st.markdown(f"""
 /* ── Hide footer ── */
 footer {{visibility: hidden;}}
 
-/* ── Tab BAR only — scoped tightly so opacity never leaks into content ── */
+/* ── Tab BAR only ── */
 .stTabs [data-baseweb="tab-list"] {{
     background: var(--secondary-background-color);
     border-radius: 12px;
@@ -47,14 +44,16 @@ footer {{visibility: hidden;}}
     padding: 8px 20px;
     border: none;
     opacity: 0.6;
+    transition: all 0.2s ease;
 }}
 /* active tab BUTTON */
 .stTabs [data-baseweb="tab-list"] [aria-selected="true"] {{
     background: {BLUE} !important;
     color: white !important;
     opacity: 1 !important;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
 }}
-/* tab PANEL — always fully visible, never inherits opacity */
+/* tab PANEL */
 [role="tabpanel"],
 [role="tabpanel"] * {{
     opacity: 1 !important;
@@ -66,11 +65,17 @@ footer {{visibility: hidden;}}
     border: 1px solid rgba(128,128,128,0.2);
     border-radius: 12px;
     padding: 16px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}}
+[data-testid="stMetric"]:hover {{
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+    border-color: rgba(37,99,235,0.4);
 }}
 
-/* ── Primary buttons ── */
+/* ── Primary buttons (FIXED HOVER) ── */
 .stButton > button {{
-    background: {BLUE};
+    background: {BLUE} !important;
     color: white !important;
     border: none;
     border-radius: 8px;
@@ -78,19 +83,31 @@ footer {{visibility: hidden;}}
     font-weight: 600;
     font-size: 0.95rem;
     width: 100%;
-    transition: opacity 0.2s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
 }}
 .stButton > button:hover {{
-    opacity: 0.85;
+    background: #1d4ed8 !important; /* Slightly darker blue */
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(37, 99, 235, 0.35);
+}}
+.stButton > button:active {{
+    transform: translateY(0px);
 }}
 
 /* ── Download button ── */
 [data-testid="stDownloadButton"] > button {{
-    background: var(--secondary-background-color);
+    background: var(--secondary-background-color) !important;
     color: {BLUE} !important;
-    border: 1px solid rgba(128,128,128,0.25);
+    border: 1px solid rgba(37,99,235,0.3) !important;
     border-radius: 8px;
-    font-weight: 500;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}}
+[data-testid="stDownloadButton"] > button:hover {{
+    background: rgba(37,99,235,0.05) !important;
+    border-color: {BLUE} !important;
 }}
 
 /* ── File uploader ── */
@@ -99,6 +116,10 @@ footer {{visibility: hidden;}}
     border: 2px dashed rgba(128,128,128,0.3);
     border-radius: 12px;
     padding: 8px;
+    transition: border-color 0.3s ease;
+}}
+[data-testid="stFileUploader"]:hover {{
+    border-color: {BLUE};
 }}
 
 /* ── Sidebar toggle always visible ── */
@@ -117,48 +138,63 @@ footer {{visibility: hidden;}}
 """, unsafe_allow_html=True)
 
 
-# ── Hero header ────────────────────────────────────────────────────────────────
+# ── Hero header (UPGRADED UI) ──────────────────────────────────────────────────
 def render_header():
     st.markdown(f"""
     <div style="
-        background: var(--secondary-background-color);
-        border: 1px solid rgba(128,128,128,0.2);
+        background: linear-gradient(135deg, rgba(37,99,235,0.08) 0%, rgba(124,58,237,0.08) 100%);
+        border: 1px solid rgba(37,99,235,0.2);
         border-radius: 16px;
         padding: 28px 36px;
         margin-bottom: 24px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.04);
     ">
         <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-            <div style="font-size:2.6rem;">🛡️</div>
+            <div style="
+                font-size:2.4rem;
+                background: white;
+                padding: 10px;
+                border-radius: 14px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            ">🛡️</div>
             <div>
                 <div style="
-                    font-size:1.9rem;
+                    font-size:2.2rem;
                     font-weight:800;
-                    color:var(--text-color);
+                    background: -webkit-linear-gradient(45deg, #2563eb, #7c3aed);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
                     letter-spacing:-0.02em;
                     line-height:1.1;
                 ">DeepShield</div>
                 <div style="
-                    font-size:0.93rem;
-                    color:{BLUE};
+                    font-size:0.95rem;
+                    color:var(--text-color);
+                    opacity: 0.8;
                     font-weight:500;
-                    margin-top:4px;
+                    margin-top:6px;
                 ">AI-Powered Media Authentication System</div>
             </div>
             <div style="margin-left:auto; text-align:right;">
                 <span style="
-                    background:rgba(37,99,235,0.12);
-                    border:1px solid {BLUE};
-                    color:{BLUE};
-                    padding:4px 12px;
+                    background: linear-gradient(90deg, rgba(37,99,235,0.15), rgba(124,58,237,0.15));
+                    border:1px solid rgba(124,58,237,0.3);
+                    color:#7c3aed;
+                    padding:6px 14px;
                     border-radius:20px;
                     font-size:0.78rem;
-                    font-weight:600;
+                    font-weight:700;
+                    letter-spacing: 0.02em;
                 ">EfficientNetB0 + Grad-CAM</span>
                 <div style="
                     color:var(--text-color);
                     opacity:0.5;
                     font-size:0.74rem;
-                    margin-top:8px;
+                    margin-top:10px;
+                    font-weight:500;
                 ">CDS6334 Visual Information Processing</div>
             </div>
         </div>
@@ -191,8 +227,9 @@ def render_verdict(is_fake, fake_prob, real_prob, inference_ms, heatmap=None):
         padding:20px 24px;
         margin-bottom:16px;
         text-align:center;
+        box-shadow: 0 4px 12px {bg};
     ">
-        <div style="font-size:2rem; margin-bottom:6px;">{icon}</div>
+        <div style="font-size:2.2rem; margin-bottom:6px;">{icon}</div>
         <div style="
             font-size:1.3rem;
             font-weight:800;
@@ -206,7 +243,7 @@ def render_verdict(is_fake, fake_prob, real_prob, inference_ms, heatmap=None):
         ">Confidence: {conf_value*100:.1f}%</div>
     </div>
 
-    <div style="color:var(--text-color); font-size:0.8rem; margin:8px 0 4px 0;">
+    <div style="color:var(--text-color); font-size:0.8rem; margin:8px 0 4px 0; font-weight: 500;">
         {conf_label} confidence
     </div>
     <div style="
@@ -221,9 +258,10 @@ def render_verdict(is_fake, fake_prob, real_prob, inference_ms, heatmap=None):
             background:{color};
             height:100%;
             border-radius:8px;
+            transition: width 0.5s ease-out;
         "></div>
     </div>
-    <div style="text-align:right; color:var(--text-color); font-size:0.75rem; margin-top:4px;">
+    <div style="text-align:right; color:var(--text-color); font-size:0.75rem; margin-top:4px; font-weight:600;">
         {conf_value*100:.1f}%
     </div>
     """, unsafe_allow_html=True)
@@ -238,9 +276,9 @@ def render_verdict(is_fake, fake_prob, real_prob, inference_ms, heatmap=None):
         st.markdown(f"""
         <div style="
             background:rgba(124,58,237,0.10);
-            border:1px solid #7c3aed;
+            border:1px solid rgba(124,58,237,0.3);
             border-radius:8px;
-            padding:8px 14px;
+            padding:10px 14px;
             margin-top:12px;
             font-size:0.82rem;
             color:#7c3aed;
@@ -250,7 +288,7 @@ def render_verdict(is_fake, fake_prob, real_prob, inference_ms, heatmap=None):
         """, unsafe_allow_html=True)
 
 
-# ── Load model — show_spinner=False removes the default "Running load_model()" ─
+# ── Load model ─────────────────────────────────────────────────────────────────
 GDRIVE_FILE_ID = "1IlYSYufMdWM2bhBIVhYHxivhRd8eVW2X"
 MODEL_PATH     = "deepfake_detector.keras"
 
@@ -306,7 +344,6 @@ def predict_image(img_rgb, model, last_conv_name, threshold, show_gradcam, alpha
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 def main():
-    # Load model silently — no "Running load_model()" toast
     with st.spinner("Loading DeepShield…"):
         model, last_conv = load_model()
     if model is None:
@@ -324,11 +361,11 @@ def main():
             border-bottom:1px solid rgba(128,128,128,0.2);
             margin-bottom:16px;
         ">
-            <div style="font-size:1.8rem;">🛡️</div>
-            <div style="font-size:1.05rem; font-weight:700; color:var(--text-color);">
+            <div style="font-size:2.2rem; margin-bottom: 8px;">🛡️</div>
+            <div style="font-size:1.15rem; font-weight:800; color:var(--text-color); letter-spacing:-0.02em;">
                 DeepShield
             </div>
-            <div style="font-size:0.72rem; color:var(--text-color); opacity:0.5;">
+            <div style="font-size:0.75rem; color:var(--text-color); opacity:0.6; font-weight: 500;">
                 Media Authentication System
             </div>
         </div>
@@ -349,32 +386,33 @@ def main():
             background:var(--background-color);
             border:1px solid rgba(128,128,128,0.2);
             border-radius:10px;
-            padding:12px 14px;
+            padding:14px;
             font-size:0.78rem;
             color:var(--text-color);
             line-height:2;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
         ">
-            <span style="color:{BLUE}; font-weight:600;">Architecture</span>
+            <span style="color:{BLUE}; font-weight:700;">Architecture</span>
             <br>EfficientNetB0<br>
-            <span style="color:{BLUE}; font-weight:600;">Parameters</span>
+            <span style="color:{BLUE}; font-weight:700;">Parameters</span>
             <br>{model.count_params():,}<br>
-            <span style="color:{BLUE}; font-weight:600;">Input shape</span>
+            <span style="color:{BLUE}; font-weight:700;">Input shape</span>
             <br>224 × 224 × 3<br>
-            <span style="color:{BLUE}; font-weight:600;">Output</span>
+            <span style="color:{BLUE}; font-weight:700;">Output</span>
             <br>Sigmoid (Binary)<br>
-            <span style="color:{BLUE}; font-weight:600;">Last conv layer</span>
+            <span style="color:{BLUE}; font-weight:700;">Last conv layer</span>
             <br>{last_conv}
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("---")
         st.markdown(f"""
-        <div style="font-size:0.72rem; color:var(--text-color); opacity:0.5; line-height:1.9;">
+        <div style="font-size:0.72rem; color:var(--text-color); opacity:0.6; line-height:1.9; text-align:center;">
             CDS6334 Visual Information Processing<br>
             Trimester 2610 · Group Project<br>
             Test Accuracy:
-            <span style="color:#22c55e; font-weight:600;">80.90%</span> ·
-            AUC: <span style="color:#22c55e; font-weight:600;">0.9086</span>
+            <span style="color:#22c55e; font-weight:700;">80.90%</span> ·
+            AUC: <span style="color:#22c55e; font-weight:700;">0.9086</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -394,9 +432,13 @@ def main():
         uploaded = st.file_uploader(
             "Drop an image here",
             type=["jpg", "jpeg", "png", "webp"],
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            key="single_image_uploader"
         )
         if uploaded is not None:
+            if "processed_single_img" not in st.session_state:
+                st.session_state.processed_single_img = None
+
             img_pil = Image.open(uploaded).convert("RGB")
             img_rgb = np.array(img_pil)
 
@@ -404,12 +446,14 @@ def main():
                 r = predict_image(img_rgb, model, last_conv,
                                   threshold, show_gradcam, alpha)
 
-            st.session_state.history.append({
-                "Filename":         uploaded.name,
-                "Verdict":          "⚠️ Deepfake" if r["is_fake"] else "✅ Authentic",
-                "Fake probability": f"{r['fake_prob']*100:.1f}%",
-                "Inference (ms)":   f"{r['inference_ms']:.1f}"
-            })
+            if st.session_state.processed_single_img != uploaded.file_id:
+                st.session_state.history.append({
+                    "Filename":         f"📷 {uploaded.name}",
+                    "Verdict":          "⚠️ Deepfake" if r["is_fake"] else "✅ Authentic",
+                    "Fake probability": f"{r['fake_prob']*100:.1f}%",
+                    "Inference (ms)":   f"{r['inference_ms']:.1f}"
+                })
+                st.session_state.processed_single_img = uploaded.file_id
 
             if show_gradcam and r["overlay"] is not None:
                 col1, col2, col3 = st.columns([1.2, 1.2, 1])
@@ -460,8 +504,12 @@ def main():
                 fps          = max(cap.get(cv2.CAP_PROP_FPS), 1)
                 step         = max(1, total_frames // max_frames)
                 frame_results, fake_probs = [], []
-                progress_bar = st.progress(0, text="Processing frames…")
+                
+                status_text = st.empty()
+                progress_bar = st.progress(0)
+                
                 sampled = idx = 0
+                total_video_inference = 0.0
 
                 while cap.isOpened() and sampled < max_frames:
                     ret, frame = cap.read()
@@ -471,7 +519,10 @@ def main():
                         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                         r = predict_image(frame_rgb, model, last_conv,
                                           threshold, False, alpha)
+                        
                         fake_probs.append(r["fake_prob"])
+                        total_video_inference += r["inference_ms"]
+
                         frame_results.append({
                             "Frame":     idx,
                             "Time (s)":  round(idx / fps, 2),
@@ -479,12 +530,19 @@ def main():
                             "Verdict":   "⚠️ Deepfake" if r["is_fake"] else "✅ Authentic"
                         })
                         sampled += 1
-                        progress_bar.progress(sampled / max_frames,
-                                              text=f"Frame {idx} / {total_frames}")
+                        
+                        status_text.markdown(f"""
+                        <div style="font-size: 0.9rem; font-weight: 600; color: {BLUE}; margin-bottom: 4px;">
+                            ⚙️ Processing frame {idx} of {total_frames}...
+                        </div>
+                        """, unsafe_allow_html=True)
+                        progress_bar.progress(sampled / max_frames)
                     idx += 1
 
                 cap.release()
                 os.unlink(tmp_path)
+                
+                status_text.empty()
                 progress_bar.empty()
 
                 avg_fake     = float(np.mean(fake_probs))
@@ -495,10 +553,11 @@ def main():
 
                 st.markdown(f"""
                 <div style="background:{bg_v};border:2px solid {color_v};
-                border-radius:12px;padding:16px 24px;text-align:center;margin:16px 0;">
+                border-radius:12px;padding:16px 24px;text-align:center;margin:16px 0;
+                box-shadow: 0 4px 12px {bg_v};">
                     <span style="font-size:1.3rem;font-weight:800;color:{color_v};">
                         {label_v}</span><br>
-                    <span style="color:var(--text-color);font-size:0.85rem;">
+                    <span style="color:var(--text-color);font-size:0.85rem;font-weight:500;margin-top:4px;display:block;">
                         Average fake probability: {avg_fake*100:.1f}%</span>
                 </div>""", unsafe_allow_html=True)
 
@@ -509,6 +568,13 @@ def main():
                 st.info(f"Analysed {sampled} frames  |  "
                         f"Video duration: {total_frames/fps:.1f}s  |  "
                         f"Sampling rate: {sampled/(total_frames/fps):.1f} fps")
+
+                st.session_state.history.append({
+                    "Filename":         f"🎥 {video_file.name}",
+                    "Verdict":          "⚠️ Deepfake" if overall_fake else "✅ Authentic",
+                    "Fake probability": f"{avg_fake*100:.1f}% (Avg)",
+                    "Inference (ms)":   f"{total_video_inference:.0f}"
+                })
 
     # ── TAB 3: Batch ──────────────────────────────────────────────────────────
     with tab_batch:
@@ -522,24 +588,66 @@ def main():
         if files:
             if st.button(f"🔍 Analyse all {len(files)} images"):
                 results, total_time = [], 0.0
+                
+                batch_status = st.empty()
                 prog = st.progress(0)
+                
+                # Create a container to hold the visual results cleanly
+                results_container = st.container()
 
                 for i, f in enumerate(files):
                     img_rgb = np.array(Image.open(f).convert("RGB"))
+                    
+                    # Ensure it uses the show_gradcam variable here so heatmaps actually generate!
                     r = predict_image(img_rgb, model, last_conv,
-                                      threshold, False, alpha)
+                                      threshold, show_gradcam, alpha)
                     total_time += r["inference_ms"]
-                    results.append({
-                        "Filename":         f.name,
+                    
+                    batch_record = {
+                        "Filename":         f"📦 {f.name}",
                         "Verdict":          "⚠️ Deepfake" if r["is_fake"] else "✅ Authentic",
                         "Fake probability": f"{r['fake_prob']*100:.1f}%",
                         "Inference (ms)":   f"{r['inference_ms']:.0f}"
-                    })
+                    }
+                    
+                    results.append(batch_record)
+                    st.session_state.history.append(batch_record) 
+                    
+                    batch_status.markdown(f"""
+                    <div style="font-size: 0.9rem; font-weight: 600; color: {BLUE}; margin-bottom: 4px;">
+                        ⚙️ Processing image {i+1} of {len(files)}...
+                    </div>
+                    """, unsafe_allow_html=True)
                     prog.progress((i + 1) / len(files))
+                    
+                    # Visually render each image in the batch as it processes
+                    with results_container:
+                        st.markdown(f"**File:** `{f.name}`")
+                        if show_gradcam and r["overlay"] is not None:
+                            col1, col2, col3 = st.columns([1.2, 1.2, 1])
+                            with col1:
+                                st.image(img_rgb, use_container_width=True)
+                            with col2:
+                                st.image(r["overlay"], use_container_width=True)
+                            with col3:
+                                render_verdict(r["is_fake"], r["fake_prob"],
+                                               r["real_prob"], r["inference_ms"],
+                                               r["heatmap"])
+                        else:
+                            col1, col2 = st.columns([1.5, 1])
+                            with col1:
+                                st.image(img_rgb, use_container_width=True)
+                            with col2:
+                                render_verdict(r["is_fake"], r["fake_prob"],
+                                               r["real_prob"], r["inference_ms"])
+                        st.markdown("---") 
+                    
+                batch_status.empty()
+                prog.empty()
 
-                df = pd.DataFrame(results)
-                st.dataframe(df, use_container_width=True)
-
+                # Add a nice header for the summary table
+                st.markdown("### 📊 Batch Summary")
+                
                 fake_count = sum(1 for r in results if "Deepfake" in r["Verdict"])
                 c1, c2, c3, c4 = st.columns(4)
                 c1.metric("Total images",       len(results))
@@ -547,13 +655,16 @@ def main():
                 c3.metric("Authentic",          len(results) - fake_count)
                 c4.metric("Avg inference",      f"{total_time/len(results):.0f} ms")
 
+                df = pd.DataFrame(results)
+                st.dataframe(df, use_container_width=True)
+
                 csv = df.to_csv(index=False).encode()
                 st.download_button("⬇️ Download results CSV",
                                    csv, "batch_results.csv", "text/csv")
 
     # ── TAB 4: Session History ─────────────────────────────────────────────────
     with tab_history:
-        st.caption("All images analysed in this session are logged here.")
+        st.caption("All images and videos analysed in this session are logged here.")
         if not st.session_state.history:
             st.markdown("""
             <div style="
@@ -563,9 +674,9 @@ def main():
                 border:1px dashed rgba(128,128,128,0.3);
             ">
                 <div style="font-size:2rem; margin-bottom:8px;">📋</div>
-                <div style="color:var(--text-color);">No images analysed yet.</div>
-                <div style="font-size:0.8rem; margin-top:4px; color:var(--text-color); opacity:0.5;">
-                    Upload images in the Single Image or Batch tab to begin.
+                <div style="color:var(--text-color); font-weight:600;">No analyses recorded yet.</div>
+                <div style="font-size:0.8rem; margin-top:4px; color:var(--text-color); opacity:0.6;">
+                    Upload media in the other tabs to begin building your session history.
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -588,8 +699,8 @@ def main():
             with col_b:
                 if st.button("🗑️ Clear History"):
                     st.session_state.history = []
+                    st.session_state.processed_single_img = None
                     st.rerun()
-
 
 if __name__ == "__main__":
     main()
