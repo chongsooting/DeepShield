@@ -588,30 +588,37 @@ def main():
         if files:
             if st.button(f"🔍 Analyse all {len(files)} images"):
                 results, total_time = [], 0.0
-                
                 batch_status = st.empty()
                 prog = st.progress(0)
                 
-                # Create a container to hold the visual results cleanly
-                results_container = st.container()
+                # Keep images in memory to render beautifully after the summary
+                visual_data = []
 
                 for i, f in enumerate(files):
                     img_rgb = np.array(Image.open(f).convert("RGB"))
                     
-                    # Ensure it uses the show_gradcam variable here so heatmaps actually generate!
-                    r = predict_image(img_rgb, model, last_conv,
-                                      threshold, show_gradcam, alpha)
+                    r = predict_image(img_rgb, model, last_conv, threshold, show_gradcam, alpha)
                     total_time += r["inference_ms"]
                     
+                    verdict_str = "⚠️ Deepfake" if r["is_fake"] else "✅ Authentic"
                     batch_record = {
-                        "Filename":         f"📦 {f.name}",
-                        "Verdict":          "⚠️ Deepfake" if r["is_fake"] else "✅ Authentic",
+                        "Filename":         f.name,
+                        "Verdict":          verdict_str,
                         "Fake probability": f"{r['fake_prob']*100:.1f}%",
                         "Inference (ms)":   f"{r['inference_ms']:.0f}"
                     }
                     
                     results.append(batch_record)
-                    st.session_state.history.append(batch_record) 
+                    
+                    st.session_state.history.append({
+                        "Filename":         f"📦 {f.name}",
+                        "Verdict":          verdict_str,
+                        "Fake probability": f"{r['fake_prob']*100:.1f}%",
+                        "Inference (ms)":   f"{r['inference_ms']:.0f}"
+                    })
+                    
+                    # Store data to render below the summary
+                    visual_data.append((f.name, img_rgb, r))
                     
                     batch_status.markdown(f"""
                     <div style="font-size: 0.9rem; font-weight: 600; color: {BLUE}; margin-bottom: 4px;">
@@ -620,34 +627,11 @@ def main():
                     """, unsafe_allow_html=True)
                     prog.progress((i + 1) / len(files))
                     
-                    # Visually render each image in the batch as it processes
-                    with results_container:
-                        st.markdown(f"**File:** `{f.name}`")
-                        if show_gradcam and r["overlay"] is not None:
-                            col1, col2, col3 = st.columns([1.2, 1.2, 1])
-                            with col1:
-                                st.image(img_rgb, use_container_width=True)
-                            with col2:
-                                st.image(r["overlay"], use_container_width=True)
-                            with col3:
-                                render_verdict(r["is_fake"], r["fake_prob"],
-                                               r["real_prob"], r["inference_ms"],
-                                               r["heatmap"])
-                        else:
-                            col1, col2 = st.columns([1.5, 1])
-                            with col1:
-                                st.image(img_rgb, use_container_width=True)
-                            with col2:
-                                render_verdict(r["is_fake"], r["fake_prob"],
-                                               r["real_prob"], r["inference_ms"])
-                        st.markdown("---") 
-                    
                 batch_status.empty()
                 prog.empty()
 
-                # Add a nice header for the summary table
+                # --- 1. EXECUTIVE SUMMARY SECTION ---
                 st.markdown("### 📊 Batch Summary")
-                
                 fake_count = sum(1 for r in results if "Deepfake" in r["Verdict"])
                 c1, c2, c3, c4 = st.columns(4)
                 c1.metric("Total images",       len(results))
@@ -659,8 +643,35 @@ def main():
                 st.dataframe(df, use_container_width=True)
 
                 csv = df.to_csv(index=False).encode()
-                st.download_button("⬇️ Download results CSV",
-                                   csv, "batch_results.csv", "text/csv")
+                st.download_button("⬇️ Download results CSV", csv, "batch_results.csv", "text/csv")
+                
+                st.markdown("---")
+                st.markdown("### 🔍 Individual Image Breakdown")
+
+                # --- 2. COLLAPSIBLE ACCORDION FOR VISUALS ---
+                for filename, img_rgb, r in visual_data:
+                    status_icon = "🔴" if r["is_fake"] else "🟢"
+                    # Clean, dynamic expander title
+                    expander_title = f"{status_icon} {filename} — {r['fake_prob']*100:.1f}% Fake"
+                    
+                    with st.expander(expander_title):
+                        if show_gradcam and r["overlay"] is not None:
+                            col1, col2, col3 = st.columns([1.2, 1.2, 1])
+                            with col1:
+                                st.image(img_rgb, use_container_width=True, caption="Original Image")
+                            with col2:
+                                st.image(r["overlay"], use_container_width=True, caption="Grad-CAM Explanation")
+                            with col3:
+                                render_verdict(r["is_fake"], r["fake_prob"],
+                                               r["real_prob"], r["inference_ms"],
+                                               r["heatmap"])
+                        else:
+                            col1, col2 = st.columns([1.5, 1])
+                            with col1:
+                                st.image(img_rgb, use_container_width=True, caption="Original Image")
+                            with col2:
+                                render_verdict(r["is_fake"], r["fake_prob"],
+                                               r["real_prob"], r["inference_ms"])
 
     # ── TAB 4: Session History ─────────────────────────────────────────────────
     with tab_history:
