@@ -698,6 +698,25 @@ def main():
                 df = pd.DataFrame(results)
                 st.dataframe(df, use_container_width=True)
 
+                # Confidence distribution chart
+                import matplotlib.pyplot as plt
+
+                fake_probs_numeric = [float(r["Fake probability"].replace("%",""))/100 
+                                    for r in results]
+
+                fig, ax = plt.subplots(figsize=(8, 3))
+                ax.hist(fake_probs_numeric, bins=20, range=(0,1),
+                        color="#2563eb", alpha=0.8, edgecolor="white")
+                ax.axvline(x=threshold, color="#ef4444", linewidth=2,
+                        linestyle="--", label=f"Threshold ({threshold:.2f})")
+                ax.set_xlabel("Fake Probability")
+                ax.set_ylabel("Number of Images")
+                ax.set_title("Confidence Score Distribution")
+                ax.legend()
+                ax.set_xlim(0, 1)
+                st.pyplot(fig)
+                plt.close()
+
                 csv = df.to_csv(index=False).encode()
                 st.download_button("⬇️ Download results CSV", csv, "batch_results.csv", "text/csv")
                 
